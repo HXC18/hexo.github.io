@@ -164,6 +164,18 @@
             </li>
           
         
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
@@ -260,6 +272,20 @@
             </div>
           
         
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/links/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>友链</span>
+                </div>
+              </a>
+            </div>
+          
+        
         
           <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
             <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
@@ -325,65 +351,108 @@
               <div class="col-12 col-md-10 m-auto">
                 
 
-<div class="row links">
-  
-    
-    <div class="card col-lg-4 col-md-6 col-sm-12">
-      <a href="https://hexo.fluid-dev.com/" class="card-body hover-with-bg" target="_blank" rel="noopener">
-        <div class="card-content">
-          
-            <div class="link-avatar my-auto">
-              <img src="/img/favicon.png" srcset="/img/loading.gif" lazyload alt="Fluid Blog"
-                   onerror="this.onerror=null; this.src=this.srcset='/img/avatar.png'"/>
-            </div>
-          
-          <div class="link-text">
-            <div class="link-title">Fluid Blog</div>
-            <div class="link-intro">主题博客</div>
-          </div>
+<div class="links-page">
+  <section class="links-wall-hero" data-reveal>
+    <div class="links-wall-hero__copy">
+      <span class="links-wall-eyebrow">FRIEND LINKS</span>
+      <h2>在各自的数字角落里，彼此点一盏灯。</h2>
+      <p>这里不仅是友链列表，也是一页更完整的交换入口。以后你只需要继续往配置里添加成员卡片，这里就会自动扩展成真正的友链墙。</p>
+      <div class="links-wall-stats">
+        <div class="links-wall-stat">
+          <strong>1</strong>
+          <span>已展示站点</span>
         </div>
-      </a>
-    </div>
-  
-    
-    <div class="card col-lg-4 col-md-6 col-sm-12">
-      <a href="https://hexo.fluid-dev.com/docs/" class="card-body hover-with-bg" target="_blank" rel="noopener">
-        <div class="card-content">
-          
-            <div class="link-avatar my-auto">
-              <img src="/img/favicon.png" srcset="/img/loading.gif" lazyload alt="Fluid Docs"
-                   onerror="this.onerror=null; this.src=this.srcset='/img/avatar.png'"/>
-            </div>
-          
-          <div class="link-text">
-            <div class="link-title">Fluid Docs</div>
-            <div class="link-intro">主题使用指南</div>
-          </div>
+        <div class="links-wall-stat">
+          <strong>24/7</strong>
+          <span>持续在线记录</span>
         </div>
-      </a>
-    </div>
-  
-    
-    <div class="card col-lg-4 col-md-6 col-sm-12">
-      <a href="https://github.com/fluid-dev/hexo-theme-fluid" class="card-body hover-with-bg" target="_blank" rel="noopener">
-        <div class="card-content">
-          
-            <div class="link-avatar my-auto">
-              <img src="/img/favicon.png" srcset="/img/loading.gif" lazyload alt="Fluid Repo"
-                   onerror="this.onerror=null; this.src=this.srcset='/img/avatar.png'"/>
-            </div>
-          
-          <div class="link-text">
-            <div class="link-title">Fluid Repo</div>
-            <div class="link-intro">主题 GitHub 仓库</div>
-          </div>
+        <div class="links-wall-stat">
+          <strong>Open</strong>
+          <span>欢迎交换友链</span>
         </div>
-      </a>
+      </div>
     </div>
+    <aside class="links-wall-sitecard" data-float>
+      <div class="links-wall-sitecard__badge">本站信息</div>
+      <h3>Hyper001 Blog</h3>
+      <p>写代码，也写下过程。</p>
+      <dl class="links-wall-sitecard__meta">
+        <div>
+          <dt>名称</dt>
+          <dd>Hyper001 Blog</dd>
+        </div>
+        <div>
+          <dt>链接</dt>
+          <dd><a href="https://blog.hyper001.cn" target="_blank" rel="noopener">https://blog.hyper001.cn</a></dd>
+        </div>
+        <div>
+          <dt>头像</dt>
+          <dd>/img/avatar.png</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="links-wall-panel links-wall-panel--content markdown-body" data-reveal>
+    <h2>交换说明</h2>
+    <p>欢迎和我交换友链。比起单纯互挂，我更希望这里收录的是认真经营、持续更新、内容有自己气质的站点。</p>
+
+    <h3>我更偏好的站点</h3>
+    <ul>
+      <li>技术博客、开发记录、项目复盘</li>
+      <li>设计、创作、写作类个人站</li>
+      <li>有长期维护意愿的独立博客</li>
+    </ul>
+
+    <h3>申请时可以提供这些信息</h3>
+    <pre><code class="yaml">name: 站点名称
+link: https://your-site.example/
+intro: 一句话简介
+avatar: https://your-site.example/avatar.png</code></pre>
+
+    <h3>本站信息</h3>
+    <ul>
+      <li>名称：Hyper001 Blog</li>
+      <li>链接：https://blog.hyper001.cn</li>
+      <li>简介：写代码，也写下过程。</li>
+    </ul>
+  </section>
+
+  <section class="links-wall-panel links-wall-panel--grid" data-reveal>
+    <div class="links-wall-section-head">
+      <div>
+        <span class="links-wall-eyebrow">COLLECTION</span>
+        <h3>友链墙</h3>
+      </div>
+      <p>认真写作、持续维护、内容稳定更新的站点，会很适合出现在这里。</p>
+    </div>
+
+    
+      <div class="row links">
+        
+          <div class="card col-lg-4 col-md-6 col-sm-12">
+            <a href="https://blog.hyper001.cn/" class="card-body hover-with-bg" target="_blank" rel="noopener">
+              <div class="card-content">
+                
+                  <div class="link-avatar my-auto">
+                    <img src="/img/avatar.png" srcset="/img/loading.gif" lazyload alt="Hyper001 Blog"
+                         onerror="this.onerror=null; this.src=this.srcset='/img/avatar.png'"/>
+                  </div>
+                
+                <div class="link-text">
+                  <div class="link-title">Hyper001 Blog</div>
+                  <div class="link-intro">记录技术、项目、博客折腾和阶段性的灵感。</div>
+                </div>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    
+  </section>
+
   
 </div>
-
-
 
 
 
