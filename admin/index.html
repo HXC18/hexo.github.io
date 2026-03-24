@@ -19,15 +19,15 @@
   <meta name="author" content="Hyper001">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Hyper001 Admin                       ONLINE ADMIN       Hyper001 后台       这是一套适配 GitHub Pages + Cloudflare 的在线管理端。登录后可以直接在线维护文章和友链。                           管理密码">
+    <meta name="description" content="Hyper001 Admin                       ONLINE ADMIN       Hyper001 后台       这里是你的在线内容控制台。登录后可以直接管理文章、友链，并查看当前的发布方式和内容状态。                           管理密码                             进入后台">
 <meta property="og:type" content="website">
 <meta property="og:title" content="page.title">
 <meta property="og:url" content="https://blog.hyper001.cn/admin/index.html">
 <meta property="og:site_name" content="Hyper001 Blog">
-<meta property="og:description" content="Hyper001 Admin                       ONLINE ADMIN       Hyper001 后台       这是一套适配 GitHub Pages + Cloudflare 的在线管理端。登录后可以直接在线维护文章和友链。                           管理密码">
+<meta property="og:description" content="Hyper001 Admin                       ONLINE ADMIN       Hyper001 后台       这里是你的在线内容控制台。登录后可以直接管理文章、友链，并查看当前的发布方式和内容状态。                           管理密码                             进入后台">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-03-24T07:49:21.019Z">
-<meta property="article:modified_time" content="2026-03-24T07:49:21.019Z">
+<meta property="article:published_time" content="2026-03-24T11:12:21.162Z">
+<meta property="article:modified_time" content="2026-03-24T11:12:21.162Z">
 <meta property="article:author" content="Hyper001">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -376,15 +376,15 @@
     <div class="login-card glass">
       <span class="eyebrow">ONLINE ADMIN</span>
       <h1 id="hyper001-后台">Hyper001 后台</h1>
-      <p>这是一套适配 GitHub Pages + Cloudflare 的在线管理端。登录后可以直接在线维护文章和友链。</p>
+      <p>这里是你的在线内容控制台。登录后可以直接管理文章、友链，并查看当前的发布方式和内容状态。</p>
       <form id="login-form" class="login-form">
         <label>
           <span>管理密码</span>
-          <input type="password" name="password" placeholder="输入 Worker 中配置的后台密码" required>
+          <input type="password" name="password" placeholder="输入 Cloudflare Worker 中配置的后台密码" required>
         </label>
         <button type="submit" class="primary-btn">进入后台</button>
       </form>
-      <p class="login-tip">页面是静态的，真正的读写权限由 Cloudflare Worker 和 GitHub Token 控制。</p>
+      <p class="login-tip">当前模式为“在线编辑 + 本地手动发布”。内容保存后会进入源码仓库，前台发布仍通过本地命令完成。</p>
     </div>
   </div>
 
@@ -392,21 +392,22 @@
     <aside class="sidebar glass">
       <div class="sidebar__brand">
         <span class="eyebrow">Hyper001</span>
-        <h1 id="cloud-admin">Cloud Admin</h1>
-        <p>前台继续跑在 GitHub Pages，后台操作会直接改仓库并自动触发发布。</p>
+        <h1 id="content-console">Content Console</h1>
+        <p>在线编辑，写入源码仓库，本地一键发布。现在这套后台是可用的内容工作台，不再只是空壳。</p>
       </div>
 
       <nav class="sidebar__nav">
         <button class="nav-btn is-active" data-section="dashboard">概览</button>
         <button class="nav-btn" data-section="posts">文章</button>
         <button class="nav-btn" data-section="links">友链</button>
-        <button class="nav-btn" data-section="guide">发布说明</button>
+        <button class="nav-btn" data-section="assets">图片助手</button>
+        <button class="nav-btn" data-section="publish">发布</button>
       </nav>
 
       <div class="sidebar__hint">
         <strong>当前模式</strong>
-        <span>Cloudflare Worker Online</span>
-        <p>每次保存都会提交到 GitHub，GitHub Actions 会自动生成并发布博客。</p>
+        <span>在线编辑 + 本地手动发布</span>
+        <p>在后台保存后，内容会写入源码仓库。最后回到本地执行一次 <code>npm run publish:manual</code> 就能把改动发布到前台。</p>
       </div>
     </aside>
 
@@ -415,16 +416,41 @@
         <div>
           <span class="eyebrow">CONTROL PANEL</span>
           <h2 id="site-title">正在加载站点信息...</h2>
+          <p class="topbar__sub" id="topbar-subtitle">正在连接源码仓库...</p>
         </div>
         <div class="topbar__actions">
-          <a id="site-link" class="ghost-btn" href="/" target="_blank" rel="noopener">打开站点</a>
+          <a id="site-link" class="ghost-btn" href="/" target="_blank" rel="noopener">打开前台</a>
+          <button id="copy-publish-command" class="ghost-btn">复制发布命令</button>
           <button id="logout-btn" class="secondary-btn">退出登录</button>
         </div>
       </header>
 
       <section class="section is-active" data-section="dashboard">
         <div class="cards-grid" id="overview-cards"></div>
-        <div class="panel-grid">
+        <div class="panel-grid panel-grid--wide">
+          <section class="panel glass">
+            <div class="panel__head">
+              <div>
+                <span class="eyebrow">STATUS</span>
+                <h3>当前状态</h3>
+              </div>
+            </div>
+            <div class="status-stack">
+              <div class="status-item">
+                <strong>在线编辑</strong>
+                <span id="status-source">已连接源码仓库</span>
+              </div>
+              <div class="status-item">
+                <strong>前台发布</strong>
+                <span>本地执行 <code>npm run publish:manual</code></span>
+              </div>
+              <div class="status-item">
+                <strong>当前流程</strong>
+                <span>在线保存到 GitHub，前台发布由本地手动触发</span>
+              </div>
+            </div>
+          </section>
+
           <section class="panel glass">
             <div class="panel__head">
               <div>
@@ -435,19 +461,21 @@
             </div>
             <div id="recent-posts" class="list-stack"></div>
           </section>
+
           <section class="panel glass">
             <div class="panel__head">
               <div>
-                <span class="eyebrow">PUBLISH FLOW</span>
-                <h3>线上发布流程</h3>
+                <span class="eyebrow">PUBLISH REMINDER</span>
+                <h3>发布提醒</h3>
               </div>
             </div>
-            <ul class="feature-list">
-              <li>保存文章或友链时，Worker 会直接提交到 GitHub 仓库</li>
-              <li>代码提交后，GitHub Actions 会自动运行 Hexo 构建发布</li>
-              <li>前台通常会在 1 到 2 分钟内更新</li>
-              <li>草稿文章保存后仍会留在仓库，但不会出现在前台</li>
-            </ul>
+            <ol class="steps-list">
+              <li>在后台保存文章或友链</li>
+              <li>本地进入项目目录</li>
+              <li>运行 <code>npm run publish:manual</code></li>
+              <li>等待 1 到 2 分钟，前台就会更新</li>
+            </ol>
+            <button id="copy-publish-command-inline" class="primary-btn">复制发布命令</button>
           </section>
         </div>
       </section>
@@ -462,6 +490,16 @@
               </div>
               <button id="new-post" class="primary-btn">新建文章</button>
             </div>
+
+            <div class="toolbar-search">
+              <input id="post-search" type="search" placeholder="搜索标题、Slug、标签">
+              <select id="post-filter">
+                <option value="all">全部文章</option>
+                <option value="published">仅已发布</option>
+                <option value="draft">仅草稿</option>
+              </select>
+            </div>
+
             <div id="posts-list" class="list-stack"></div>
           </aside>
 
@@ -470,6 +508,7 @@
               <div>
                 <span class="eyebrow">EDITOR</span>
                 <h3 id="post-editor-title">选择一篇文章开始编辑</h3>
+                <p class="editor-meta" id="post-editor-meta">你可以在这里修改标题、标签、分类、摘要、封面和正文。</p>
               </div>
               <div class="toolbar-actions">
                 <button id="delete-post" class="danger-btn">删除</button>
@@ -524,17 +563,11 @@
             <div class="workspace__toolbar">
               <div>
                 <span class="eyebrow">PREVIEW</span>
-                <h3>编辑提示</h3>
+                <h3>Markdown 预览</h3>
               </div>
             </div>
-            <article class="preview-body markdown-body">
-              <p>这版线上后台先把“文章和友链的在线管理”打通，正文预览为了保持 Worker 轻量，暂时以编辑器本身为主。</p>
-              <p>下一阶段我可以继续给它补这些能力：</p>
-              <ul>
-                <li>Worker 侧 Markdown 渲染预览</li>
-                <li>图片上传到 GitHub / R2</li>
-                <li>页面管理和分类标签独立管理</li>
-              </ul>
+            <article id="markdown-preview" class="preview-body markdown-body">
+              <p class="muted">开始输入正文后，这里会显示实时预览。</p>
             </article>
           </section>
         </div>
@@ -558,6 +591,7 @@
               <div>
                 <span class="eyebrow">LINK EDITOR</span>
                 <h3 id="link-editor-title">选择一个友链条目</h3>
+                <p class="editor-meta">这里维护的是友链墙真实数据，保存后会同步写入 <code>_config.fluid.yml</code>。</p>
               </div>
               <div class="toolbar-actions">
                 <button id="delete-link" class="danger-btn">删除</button>
@@ -577,7 +611,7 @@
                 </label>
                 <label class="full-width">
                   <span>一句话简介</span>
-                  <textarea name="intro" rows="3" placeholder="记录技术、设计、项目或者生活。"></textarea>
+                  <textarea name="intro" rows="3" placeholder="记录技术、设计、项目或者生活"></textarea>
                 </label>
                 <label class="full-width">
                   <span>头像地址</span>
@@ -606,35 +640,94 @@
         </div>
       </section>
 
-      <section class="section" data-section="guide">
-        <div class="panel-grid">
+      <section class="section" data-section="assets">
+        <div class="panel-grid panel-grid--wide">
           <section class="panel glass">
             <div class="panel__head">
               <div>
-                <span class="eyebrow">HOW IT WORKS</span>
-                <h3>这套线上后台怎么工作</h3>
+                <span class="eyebrow">IMAGE HELPER</span>
+                <h3>图片与封面助手</h3>
               </div>
             </div>
-            <ul class="feature-list">
-              <li>`/admin/` 页面由 Hexo 直接生成，继续托管在 GitHub Pages</li>
-              <li>后台读写请求发给 Cloudflare Worker，不暴露 GitHub Token 到浏览器</li>
-              <li>Worker 通过 GitHub API 修改 `source/_posts` 和 `_config.fluid.yml`</li>
-              <li>仓库更新后，GitHub Actions 自动执行 `npm run build` 和 `npm run deploy`</li>
-            </ul>
+
+            <div class="form-grid">
+              <label class="full-width">
+                <span>图片地址</span>
+                <input id="asset-url" type="text" placeholder="https://example.com/cover.jpg 或 /img/cover.jpg">
+              </label>
+              <label>
+                <span>Alt 文本</span>
+                <input id="asset-alt" type="text" placeholder="图片描述">
+              </label>
+              <label>
+                <span>标题说明</span>
+                <input id="asset-title" type="text" placeholder="可选">
+              </label>
+            </div>
+
+            <div class="snippet-grid">
+              <div class="snippet-card">
+                <strong>正文图片</strong>
+                <code id="asset-markdown">![图片描述](https://example.com/image.jpg)</code>
+                <button data-copy-target="asset-markdown" class="ghost-btn">复制 Markdown</button>
+              </div>
+              <div class="snippet-card">
+                <strong>封面字段</strong>
+                <code id="asset-cover">cover: https://example.com/image.jpg</code>
+                <button data-copy-target="asset-cover" class="ghost-btn">复制封面字段</button>
+              </div>
+            </div>
           </section>
 
           <section class="panel glass">
             <div class="panel__head">
               <div>
-                <span class="eyebrow">NEXT STEP</span>
-                <h3>下一阶段最值得补的功能</h3>
+                <span class="eyebrow">ASSET TIPS</span>
+                <h3>当前最适合你的用法</h3>
               </div>
             </div>
             <ul class="feature-list">
-              <li>图片上传到 GitHub 或 Cloudflare R2</li>
-              <li>单页面、分类、标签管理</li>
-              <li>文章 Markdown 实时预览</li>
-              <li>更细的权限控制和操作日志</li>
+              <li>如果你已经有图床，直接把图片地址粘到这里就能快速生成可用 Markdown。</li>
+              <li>如果封面图和正文图都托管在同一图床，这里会比手敲 Front-matter 快很多。</li>
+              <li>下一阶段我可以继续帮你接 GitHub 仓库图片上传，或者接 Cloudflare R2 图床。</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="section" data-section="publish">
+        <div class="panel-grid panel-grid--wide">
+          <section class="panel glass">
+            <div class="panel__head">
+              <div>
+                <span class="eyebrow">MANUAL PUBLISH</span>
+                <h3>本地发布流程</h3>
+              </div>
+            </div>
+            <ol class="steps-list">
+              <li>在线后台保存内容后，源码已经进入 <code>Hyper001-source</code></li>
+              <li>回到本地项目目录 <code>C:\Users\31847\Documents\Blog\Hyper001</code></li>
+              <li>执行 <code>npm run publish:manual</code></li>
+              <li>等待命令完成，前台会被部署到 <code>Hexo.github.io</code></li>
+            </ol>
+            <div class="publish-callout">
+              <strong>推荐做法</strong>
+              <p>每次写完一篇再统一发布即可，不需要每改一处就发布一次。</p>
+            </div>
+            <button id="copy-publish-command-panel" class="primary-btn">复制发布命令</button>
+          </section>
+
+          <section class="panel glass">
+            <div class="panel__head">
+              <div>
+                <span class="eyebrow">CURRENT MODE</span>
+                <h3>为什么现在是手动发布</h3>
+              </div>
+            </div>
+            <ul class="feature-list">
+              <li>在线后台负责编辑和保存源码，不再依赖当前失效的 GitHub Actions 自动触发。</li>
+              <li>这样你仍然能在线写作，同时避免每次保存都遇到自动工作流失败。</li>
+              <li>等后面条件允许，我再帮你把自动发布链路重新接回来。</li>
             </ul>
           </section>
         </div>
@@ -644,6 +737,7 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/admin/config.js"></script>
   <script src="/admin/app.js" defer></script>
 </body>

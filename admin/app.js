@@ -1,10 +1,12 @@
 (function () {
   const config = window.HYPER001_ADMIN_CONFIG || {};
   const apiBase = String(config.apiBase || "").replace(/\/$/, "");
+  const publishCommand = "npm run publish:manual";
 
   const state = {
     overview: null,
     posts: [],
+    filteredPosts: [],
     currentPostId: null,
     links: [],
     currentLinkIndex: null,
@@ -19,12 +21,18 @@
     sections: [...document.querySelectorAll(".section")],
     siteTitle: document.querySelector("#site-title"),
     siteLink: document.querySelector("#site-link"),
+    topbarSubtitle: document.querySelector("#topbar-subtitle"),
+    statusSource: document.querySelector("#status-source"),
     logoutBtn: document.querySelector("#logout-btn"),
     overviewCards: document.querySelector("#overview-cards"),
     recentPosts: document.querySelector("#recent-posts"),
     postsList: document.querySelector("#posts-list"),
+    postSearch: document.querySelector("#post-search"),
+    postFilter: document.querySelector("#post-filter"),
     postForm: document.querySelector("#post-form"),
     postEditorTitle: document.querySelector("#post-editor-title"),
+    postEditorMeta: document.querySelector("#post-editor-meta"),
+    markdownPreview: document.querySelector("#markdown-preview"),
     newPost: document.querySelector("#new-post"),
     savePost: document.querySelector("#save-post"),
     deletePost: document.querySelector("#delete-post"),
@@ -35,6 +43,17 @@
     newLink: document.querySelector("#new-link"),
     saveLinks: document.querySelector("#save-links"),
     deleteLink: document.querySelector("#delete-link"),
+    assetUrl: document.querySelector("#asset-url"),
+    assetAlt: document.querySelector("#asset-alt"),
+    assetTitle: document.querySelector("#asset-title"),
+    assetMarkdown: document.querySelector("#asset-markdown"),
+    assetCover: document.querySelector("#asset-cover"),
+    copyPublishButtons: [
+      document.querySelector("#copy-publish-command"),
+      document.querySelector("#copy-publish-command-inline"),
+      document.querySelector("#copy-publish-command-panel"),
+    ].filter(Boolean),
+    copyButtons: [...document.querySelectorAll("[data-copy-target]")],
     toast: document.querySelector("#toast"),
   };
 
@@ -70,7 +89,7 @@
   }
 
   function fromInputDate(value) {
-    return value ? value.replace("T", " ") + ":00" : "";
+    return value ? `${value.replace("T", " ")}:00` : "";
   }
 
   async function api(path, options = {}) {
@@ -91,6 +110,7 @@
       error.details = payload.details || "";
       throw error;
     }
+
     return payload;
   }
 
@@ -100,13 +120,14 @@
     clearTimeout(showToast.timer);
     showToast.timer = setTimeout(() => {
       els.toast.hidden = true;
-    }, 2400);
+    }, 2600);
   }
 
   function switchSection(name) {
     for (const section of els.sections) {
       section.classList.toggle("is-active", section.dataset.section === name);
     }
+
     for (const button of els.navButtons) {
       button.classList.toggle("is-active", button.dataset.section === name);
     }
@@ -114,15 +135,18 @@
 
   function renderOverview() {
     if (!state.overview) return;
+
     const { site, counts, recentPosts } = state.overview;
     els.siteTitle.textContent = `${site.title} 在线后台`;
     els.siteLink.href = site.url || "/";
+    els.topbarSubtitle.textContent = `源码仓库已连接，当前永久链接规则为 ${site.permalink || "未配置"}`;
+    els.statusSource.textContent = `已连接 ${site.author || "站点管理员"} 的源码仓库`;
 
     const metrics = [
-      { label: "文章总数", value: counts.posts, hint: "当前仓库里的文章" },
-      { label: "草稿数量", value: counts.drafts, hint: "不会显示到前台" },
-      { label: "友链数量", value: counts.links, hint: "友链墙成员" },
-      { label: "永久链接", value: site.permalink || "-", hint: "当前 URL 规则" },
+      { label: "文章总数", value: counts.posts, hint: "当前源码仓库中的文章数量" },
+      { label: "草稿数量", value: counts.drafts, hint: "这些文章不会直接出现在前台" },
+      { label: "友链数量", value: counts.links, hint: "友链墙当前成员数量" },
+      { label: "发布方式", value: "手动", hint: "保存后本地执行发布命令" },
     ];
 
     els.overviewCards.innerHTML = metrics.map((metric) => `
@@ -140,7 +164,7 @@
           <div class="list-item__meta">${escapeHtml(post.date)} · ${escapeHtml(post.slug)}</div>
         </button>
       `).join("")
-      : '<div class="list-item"><h4>还没有文章</h4><div class="list-item__meta">先去新建第一篇文章吧。</div></div>';
+      : '<div class="list-item"><h4>还没有文章</h4><div class="list-item__meta">先去创建第一篇文章吧。</div></div>';
 
     for (const button of els.recentPosts.querySelectorAll("[data-open-post]")) {
       button.addEventListener("click", async () => {
@@ -150,8 +174,36 @@
     }
   }
 
+  function applyPostFilters() {
+    const keyword = String(els.postSearch.value || "").trim().toLowerCase();
+    const filter = els.postFilter.value;
+
+    state.filteredPosts = state.posts.filter((post) => {
+      if (filter === "draft" && !post.draft) return false;
+      if (filter === "published" && post.draft) return false;
+
+      if (!keyword) return true;
+
+      const haystack = [
+        post.title,
+        post.slug,
+        ...(post.tags || []),
+        ...(post.categories || []),
+      ].join(" ").toLowerCase();
+
+      return haystack.includes(keyword);
+    });
+  }
+
   function renderPostsList() {
-    els.postsList.innerHTML = state.posts.map((post) => `
+    applyPostFilters();
+
+    if (!state.filteredPosts.length) {
+      els.postsList.innerHTML = '<div class="list-item"><h4>没有匹配结果</h4><div class="list-item__meta">试试换个关键词，或者切回“全部文章”。</div></div>';
+      return;
+    }
+
+    els.postsList.innerHTML = state.filteredPosts.map((post) => `
       <button class="list-item ${state.currentPostId === post.id ? "is-active" : ""}" data-post-id="${encodeURIComponent(post.id)}">
         <h4>${escapeHtml(post.title)}${post.draft ? '<span class="badge">草稿</span>' : ""}</h4>
         <div class="list-item__meta">${escapeHtml(post.date)} · ${escapeHtml(post.slug)}</div>
@@ -164,10 +216,15 @@
   }
 
   function renderLinksList() {
+    if (!state.links.length) {
+      els.linksList.innerHTML = '<div class="list-item"><h4>还没有友链</h4><div class="list-item__meta">点击右上角按钮创建第一条友链。</div></div>';
+      return;
+    }
+
     els.linksList.innerHTML = state.links.map((link, index) => `
       <button class="list-item ${state.currentLinkIndex === index ? "is-active" : ""}" data-link-index="${index}">
         <h4>${escapeHtml(link.title || "未命名友链")}</h4>
-        <div class="list-item__meta">${escapeHtml(link.link || "请补充链接")}</div>
+        <div class="list-item__meta">${escapeHtml(link.link || "请补充链接地址")}</div>
       </button>
     `).join("");
 
@@ -187,6 +244,10 @@
     field(els.postForm, "draft").checked = Boolean(post.draft);
     field(els.postForm, "content").value = post.content || "";
     els.postEditorTitle.textContent = post.title || "新建文章";
+    els.postEditorMeta.textContent = post.id
+      ? `当前文件：${post.id} · ${post.draft ? "草稿" : "已发布"}`
+      : "填完标题和正文后保存，后台会自动创建新的 Markdown 文件。";
+    renderMarkdownPreview(post.content || "");
   }
 
   function fillLinkForm(link) {
@@ -202,6 +263,7 @@
     const avatarStyle = link.avatar
       ? `style="background-image:url('${escapeAttribute(link.avatar)}'); background-size:cover; background-position:center;"`
       : "";
+
     els.linkPreview.innerHTML = `
       <div class="friend-card-preview__avatar" ${avatarStyle}></div>
       <div>
@@ -210,6 +272,33 @@
         <span>${escapeHtml(link.link || "https://example.com/")}</span>
       </div>
     `;
+  }
+
+  function renderAssetHelper() {
+    const url = String(els.assetUrl.value || "").trim();
+    const alt = String(els.assetAlt.value || "").trim() || "图片描述";
+    const title = String(els.assetTitle.value || "").trim();
+    const markdown = title
+      ? `![${alt}](${url || "https://example.com/image.jpg"} "${title}")`
+      : `![${alt}](${url || "https://example.com/image.jpg"})`;
+    const cover = `cover: ${url || "https://example.com/image.jpg"}`;
+
+    els.assetMarkdown.textContent = markdown;
+    els.assetCover.textContent = cover;
+  }
+
+  function renderMarkdownPreview(content) {
+    if (!content.trim()) {
+      els.markdownPreview.innerHTML = '<p class="muted">开始输入正文后，这里会显示实时预览。</p>';
+      return;
+    }
+
+    if (window.marked && typeof window.marked.parse === "function") {
+      els.markdownPreview.innerHTML = window.marked.parse(content);
+      return;
+    }
+
+    els.markdownPreview.innerHTML = `<pre>${escapeHtml(content)}</pre>`;
   }
 
   async function loadOverview() {
@@ -286,7 +375,7 @@
     state.currentPostId = saved.id;
     await Promise.all([loadOverview(), loadPosts(false)]);
     await openPost(saved.id);
-    showToast("文章已提交到 GitHub，前台会自动发布");
+    showToast("文章已保存到源码仓库。下一步记得在本地执行发布命令。");
   }
 
   async function removeCurrentPost() {
@@ -294,6 +383,7 @@
       showToast("当前没有可删除的文章");
       return;
     }
+
     if (!window.confirm("确定删除这篇文章吗？")) return;
 
     await api(`/api/posts/${encodeURIComponent(state.currentPostId)}`, { method: "DELETE" });
@@ -303,7 +393,7 @@
     if (state.posts[0]) {
       await openPost(state.posts[0].id);
     }
-    showToast("文章已删除，并已提交到 GitHub");
+    showToast("文章已删除。别忘了再执行一次本地发布。");
   }
 
   async function saveAllLinks() {
@@ -324,7 +414,7 @@
       state.currentLinkIndex = null;
       fillLinkForm(blankLink());
     }
-    showToast("友链墙已更新，并已提交到 GitHub");
+    showToast("友链已写入源码仓库。发布前台时会一起生效。");
   }
 
   function removeCurrentLink() {
@@ -332,6 +422,7 @@
       showToast("当前没有可删除的友链");
       return;
     }
+
     if (!window.confirm("确定删除这个友链条目吗？")) return;
 
     state.links.splice(state.currentLinkIndex, 1);
@@ -342,7 +433,7 @@
     } else {
       fillLinkForm(blankLink());
     }
-    showToast("已从列表移除，记得点击保存友链墙");
+    showToast("已从列表中移除，记得点击“保存友链墙”。");
   }
 
   async function handleLogin(event) {
@@ -361,6 +452,11 @@
     els.adminShell.hidden = true;
     els.loginScreen.hidden = false;
     showToast("已退出登录");
+  }
+
+  async function copyText(value, successText) {
+    await navigator.clipboard.writeText(value);
+    showToast(successText);
   }
 
   function bindEvents() {
@@ -395,6 +491,10 @@
       removeCurrentPost().catch((error) => showToast(error.message || "删除失败"));
     });
 
+    els.postSearch.addEventListener("input", renderPostsList);
+    els.postFilter.addEventListener("change", renderPostsList);
+    field(els.postForm, "content").addEventListener("input", (event) => renderMarkdownPreview(event.target.value));
+
     els.newLink.addEventListener("click", () => {
       state.currentLinkIndex = state.links.length;
       state.links.push(blankLink());
@@ -419,6 +519,24 @@
         renderLinkPreview(current);
       });
     });
+
+    [els.assetUrl, els.assetAlt, els.assetTitle].forEach((input) => {
+      input.addEventListener("input", renderAssetHelper);
+    });
+
+    for (const button of els.copyPublishButtons) {
+      button.addEventListener("click", () => {
+        copyText(publishCommand, "发布命令已复制").catch(() => showToast("复制失败，请手动复制"));
+      });
+    }
+
+    for (const button of els.copyButtons) {
+      button.addEventListener("click", () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) return;
+        copyText(target.textContent, "内容已复制").catch(() => showToast("复制失败，请手动复制"));
+      });
+    }
   }
 
   async function bootstrapApp() {
@@ -454,17 +572,16 @@
 
   function init() {
     const hasApiBase = apiBase && !apiBase.includes("your-admin-api");
-    if (!hasApiBase) {
-      showToast("先在 /admin/config.js 里填好 Worker 地址");
-      fillPostForm(blankPost());
-      fillLinkForm(blankLink());
-      bindEvents();
-      return;
-    }
-
+    renderAssetHelper();
     fillPostForm(blankPost());
     fillLinkForm(blankLink());
     bindEvents();
+
+    if (!hasApiBase) {
+      showToast("请先在 /admin/config.js 中填好 Worker 地址");
+      return;
+    }
+
     bootstrapApp().catch((error) => {
       showToast(error.message || "初始化失败");
     });
