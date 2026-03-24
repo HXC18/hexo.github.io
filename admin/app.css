@@ -20,6 +20,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background:
@@ -120,7 +121,8 @@ a {
   grid-template-columns: 290px minmax(0, 1fr);
   min-height: 100vh;
   gap: 1.2rem;
-  padding: 1.2rem;
+  width: 100%;
+  padding: 0.9rem;
 }
 
 .sidebar,
@@ -136,6 +138,9 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: sticky;
+  top: 0.9rem;
+  min-height: calc(100vh - 1.8rem);
   padding: 1.5rem;
 }
 
@@ -184,6 +189,8 @@ a {
 .main {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+  align-content: start;
 }
 
 .topbar {
@@ -243,6 +250,7 @@ a {
 
 .section.is-active {
   display: block;
+  width: 100%;
 }
 
 .cards-grid,
@@ -260,7 +268,7 @@ a {
 }
 
 .panel-grid--wide {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
 .metric-card,
@@ -356,12 +364,25 @@ a {
 
 .workspace {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1.2fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1.45fr) minmax(340px, 1fr);
   gap: 1rem;
+  min-height: calc(100vh - 11rem);
 }
 
 .workspace--links {
-  grid-template-columns: 300px minmax(0, 1fr) minmax(300px, 0.8fr);
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1.2fr) minmax(320px, 0.95fr);
+}
+
+.workspace__list,
+.workspace__editor,
+.workspace__preview {
+  min-height: 100%;
+}
+
+.workspace__editor,
+.workspace__preview {
+  display: grid;
+  align-content: start;
 }
 
 .form-stack,
@@ -429,7 +450,7 @@ select:focus {
 }
 
 .preview-body {
-  min-height: 220px;
+  min-height: 360px;
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 1rem;
@@ -603,6 +624,12 @@ select:focus {
   .workspace,
   .workspace--links {
     grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .sidebar {
+    position: static;
+    min-height: auto;
   }
 }
 
